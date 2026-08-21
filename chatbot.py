@@ -3,14 +3,14 @@ import os
 from groq import Groq
 
 client = Groq(
-    api_key='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'
+    api_key=os.environ.get("GROQ_API_KEY"),
 )
 
 chat_completion = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": "Explain the importance of fast language models",
+            "content": "capital of india ? only in 10 words maximum.",
         }
     ],
     model="groq/compound",
