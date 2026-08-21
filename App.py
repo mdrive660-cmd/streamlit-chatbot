@@ -60,7 +60,7 @@ with st.sidebar:
     # Model selection
     model_name = st.selectbox(
         "Select Model",
-        ["gemini-pro", "gemini-1.5-pro", "gemini-1.5-flash"],
+        ["gemini-3.7-flash", "gemini-1.5-pro", "gemini-1.5-flash"],
         help="Choose the AI model to use for responses"
     )
     
