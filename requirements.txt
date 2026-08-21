@@ -1,4 +1,4 @@
 streamlit==1.38.0
-openai==1.51.0          # optional – for the OpenAI backend
-groq==0.5.0             # official Groq client (OpenAI‑compatible)
-python-dotenv==1.0.1    # not required any more, but harmless if you keep it
+openai==1.51.0
+groq==0.5.0
+python-dotenv==1.0.1
