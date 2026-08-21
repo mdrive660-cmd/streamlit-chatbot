@@ -88,7 +88,7 @@ with col1:
 with col2:
     st.sidebar.title("Settings")
     api_key = st.sidebar.text_input("GROQ API Key", type="password", value=os.environ.get("GROQ_API_KEY", ""))
-    model = st.sidebar.selectbox("Model", ["groq/compound"], index=0)
+    model = st.sidebar.selectbox("Model", ["openai/gpt-oss-120b"], index=0)
     max_context_messages = st.sidebar.slider("Max context messages", min_value=2, max_value=24, value=12)
     max_context_chars = st.sidebar.slider("Max context characters", min_value=1000, max_value=12000, value=3000, step=500)
     if st.sidebar.button("Clear conversation"):
@@ -182,7 +182,7 @@ if submitted and user_input:
             st.error(f"API error: {e}")
 
     # rerun so UI updates and input is cleared
-    st.experimental_rerun()
+    st.rerun()
 
 # Footer / tips
 st.markdown("---")
