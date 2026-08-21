@@ -3,7 +3,7 @@ import os
 from groq import Groq
 
 client = Groq(
-    api_key=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,
+    api_key='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'
 )
 
 chat_completion = client.chat.completions.create(
