@@ -1,42 +1,40 @@
 # ──────────────────────────────────────────────────────────────────────
 # app.py
-# Streamlit chatbot that can talk to OpenAI or Groq.
-# API keys are entered directly in the sidebar (no .env needed).
+# Streamlit chatbot that can talk to OpenAI **or** Groq.
+# API keys are entered in the sidebar (no .env needed).
 # ──────────────────────────────────────────────────────────────────────
 
 import streamlit as st
 
 # ----------------------------------------------------------------------
-# 1️⃣ Sidebar – enter API keys, choose provider, model, etc.
+# 1️⃣ Sidebar – API keys, provider, model, temperature, max‑tokens, etc.
 # ----------------------------------------------------------------------
 with st.sidebar:
     st.title("⚙️ Settings")
 
     # ---- 1️⃣ Paste API keys -------------------------------------------------
-    # Keys are kept in `st.session_state` only for the lifetime of the session.
-    # They are NOT written to disk.
+    # Keys are stored only in `st.session_state` for the current session.
     if "openai_key" not in st.session_state:
         st.session_state.openai_key = ""
     if "groq_key" not in st.session_state:
         st.session_state.groq_key = ""
 
-    # Text input boxes (type="password" masks the characters)
     st.session_state.openai_key = st.text_input(
         label="OpenAI API key",
         value=st.session_state.openai_key,
         type="password",
-        help="Paste your `sk-…` key here. Leave empty if you only want Groq.",
+        help="Paste your OpenAI `sk-…` key here. Leave empty if you only want Groq.",
     )
-
     st.session_state.groq_key = st.text_input(
         label="Groq API key",
         value=st.session_state.groq_key,
         type="password",
-        help="Paste your `gsk_…` key here. Leave empty if you only want OpenAI.",
+        help="Paste your Groq `gsk_…` key here. Leave empty if you only want OpenAI.",
     )
 
     # ---- 2️⃣ Provider selector ---------------------------------------------
-    # Default to whichever key is filled; if both are present let the user choose.
+    # Pick whichever provider you have a key for. If both keys exist you can
+    # freely switch between them.
     default_provider = (
         "OpenAI"
         if st.session_state.openai_key
@@ -46,16 +44,16 @@ with st.sidebar:
         "LLM provider",
         options=["OpenAI", "Groq"],
         index=0 if default_provider == "OpenAI" else 1,
-        help="Select which API to call. The appropriate key must be filled.",
+        help="Choose which API to call (the corresponding key must be filled).",
     )
 
-    # ---- 3️⃣ Model picker ---------------------------------------------------
+    # ---- 3️⃣ Model picker ----------------------------------------------------
     if provider == "OpenAI":
         model = st.selectbox(
             "Model",
             options=["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],
             index=0,
-            help="OpenAI models – pick one based on cost/quality.",
+            help="OpenAI models – trade‑off cost vs. quality.",
         )
     else:  # Groq
         model = st.selectbox(
@@ -67,10 +65,10 @@ with st.sidebar:
                 "llama3-70b-8192",
             ],
             index=0,
-            help="Groq models – see https://groq.com/models.",
+            help="Groq models – see https://groq.com/models for up‑to‑date list.",
         )
 
-    # ---- 4️⃣ Temperature & max‑tokens sliders --------------------------------
+    # ---- 4️⃣ Temperature & max‑tokens sliders ---------------------------------
     temperature = st.slider(
         "Creativity (temperature)",
         min_value=0.0,
@@ -79,17 +77,16 @@ with st.sidebar:
         step=0.05,
         help="Higher = more random, lower = more deterministic.",
     )
-
     max_tokens = st.number_input(
         "Maximum tokens per reply",
         min_value=256,
         max_value=4096,
         value=1024,
         step=64,
-        help="Upper limit on the length of the assistant's response.",
+        help="Upper bound on the length of the assistant's response.",
     )
 
-    # ---- 5️⃣ Optional system prompt editor ----------------------------------
+    # ---- 5️⃣ System prompt (optional edit) ------------------------------------
     if "system_prompt" not in st.session_state:
         st.session_state.system_prompt = (
             "You are a helpful, friendly assistant. Answer concisely, "
@@ -103,22 +100,22 @@ with st.sidebar:
             height=120,
         )
 
-    # ---- 6️⃣ Clear conversation button --------------------------------------
+    # ---- 6️⃣ Clear conversation button ----------------------------------------
     if st.button("🗑️ Clear conversation", use_container_width=True):
-        # Reset everything except the system prompt (kept in session_state)
+        # Reset the message list but keep the (possibly edited) system prompt.
         st.session_state.messages = [
             {"role": "system", "content": st.session_state.system_prompt}
         ]
         st.experimental_rerun()
 
 # ----------------------------------------------------------------------
-# 2️⃣ Sanity checks – make sure the selected provider has a key
+# 2️⃣ Sanity checks – make sure the selected provider actually has a key
 # ----------------------------------------------------------------------
 if provider == "OpenAI" and not st.session_state.openai_key:
-    st.error("🚨 OpenAI key is empty. Paste it in the sidebar.")
+    st.error("🚨 OpenAI key missing. Paste it in the sidebar.")
     st.stop()
 if provider == "Groq" and not st.session_state.groq_key:
-    st.error("🚨 Groq key is empty. Paste it in the sidebar.")
+    st.error("🚨 Groq key missing. Paste it in the sidebar.")
     st.stop()
 
 # ----------------------------------------------------------------------
@@ -126,8 +123,8 @@ if provider == "Groq" and not st.session_state.groq_key:
 # ----------------------------------------------------------------------
 def get_chat_response(messages: list[dict]) -> str:
     """
-    Sends the conversation history to the selected provider and returns
-    the assistant's reply as plain text.
+    Sends the full conversation (`messages`) to the selected provider
+    and returns the assistant's reply as plain text.
     """
     if provider == "OpenAI":
         # ---------- OpenAI path ----------
@@ -158,14 +155,14 @@ def get_chat_response(messages: list[dict]) -> str:
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
-            # Groq returns the same structure as OpenAI
+            # Groq's response structure matches OpenAI's
             return response.choices[0].message.content.strip()
         except Exception as exc:
             st.error(f"❗ Groq API error: {exc}")
             return "Sorry, I couldn't generate a response."
 
 # ----------------------------------------------------------------------
-# 4️⃣ Page header
+# 4️⃣ Page config & header
 # ----------------------------------------------------------------------
 st.set_page_config(
     page_title="💬 Streamlit Chatbot (OpenAI ↔ Groq)",
@@ -180,19 +177,19 @@ st.caption(
 )
 
 # ----------------------------------------------------------------------
-# 5️⃣ Session state – keep the whole conversation
+# 5️⃣ Session state – store the whole conversation (including system prompt)
 # ----------------------------------------------------------------------
 if "messages" not in st.session_state:
-    # Initialise with the (possibly edited) system prompt
+    # Initialise with the (maybe edited) system prompt
     st.session_state.messages = [
         {"role": "system", "content": st.session_state.system_prompt}
     ]
 
 # ----------------------------------------------------------------------
-# 6️⃣ Render chat history (skip the system message)
+# 6️⃣ Render the chat history (skip the system message)
 # ----------------------------------------------------------------------
 def render_chat():
-    for msg in st.session_state.messages[1:]:   # ignore system entry
+    for msg in st.session_state.messages[1:]:   # ignore index 0 (system)
         if msg["role"] == "user":
             with st.chat_message("user"):
                 st.markdown(msg["content"])
@@ -203,6 +200,27 @@ def render_chat():
 render_chat()
 
 # ----------------------------------------------------------------------
-# 7️⃣ Text input – the user sends a new message
+# 7️⃣ Text input – user sends a new message
 # ----------------------------------------------------------------------
-if user_input := st.chat_input
+if user_input := st.chat_input("Ask me anything…"):
+    # 1️⃣ Append the user message to the session history
+    st.session_state.messages.append({"role": "user", "content": user_input})
+
+    # 2️⃣ Show it immediately (optimistic UI)
+    with st.chat_message("user"):
+        st.markdown(user_input)
+
+    # 3️⃣ Call the LLM (show a spinner while waiting)
+    with st.spinner("Thinking…"):
+        assistant_reply = get_chat_response(st.session_state.messages)
+
+    # 4️⃣ Append assistant reply and render it
+    st.session_state.messages.append(
+        {"role": "assistant", "content": assistant_reply}
+    )
+    with st.chat_message("assistant"):
+        st.markdown(assistant_reply)
+
+# ----------------------------------------------------------------------
+# End of file
+# ----------------------------------------------------------------------
