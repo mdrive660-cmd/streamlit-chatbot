@@ -5,7 +5,7 @@ from datetime import datetime
 
 # Page configuration
 st.set_page_config(
-    page_title="Modern AI Chatbot",
+    page_title="Vaibhav ka Chatbot",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -90,15 +90,15 @@ with st.sidebar:
         st.rerun()
     
     st.divider()
-    st.caption("🚀 Powered by Google AI Studio (Gemini)")
+    st.caption("🚀 Powered by Gen-Z' Brain ")
 
 # Main header
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.markdown("""
         <div class="header">
-            <h1>🤖 Modern AI Chatbot</h1>
-            <p style="color: #666; margin: 0;">Powered by Google Gemini AI</p>
+            <h1>🤖 Vaibhav ka Chatbot</h1>
+            <p style="color: #666; margin: 0;">Powered by Gen-Z' Brain</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -141,7 +141,7 @@ col1, col2 = st.columns([0.9, 0.1])
 with col1:
     user_input = st.text_input(
         "Type your message...",
-        placeholder="Ask me anything!",
+        placeholder="Ask me anything but not personal!",
         label_visibility="collapsed",
         key="user_input"
     )
@@ -160,7 +160,7 @@ if send_button and user_input:
     
     try:
         # Show loading spinner
-        with st.spinner("🤔 Thinking..."):
+        with st.spinner("🤔 Sochne de yrrr..."):
             # Initialize the model
             model = genai.GenerativeModel(
                 model_name=model_name,
@@ -194,7 +194,7 @@ if send_button and user_input:
         st.rerun()
         
     except Exception as e:
-        st.error(f"❌ Error: {str(e)}")
+        st.error(f"❌ Kuch toh gadbad hai : {str(e)}")
         # Remove the last user message if there was an error
         st.session_state.messages.pop()
 
