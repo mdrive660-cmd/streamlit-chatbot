@@ -389,4 +389,4 @@ if send_button and user_input.strip():
     })
 
     # Rerun to refresh the chat and show results expander
-    st.experimental_rerun()
+    st.rerun()
